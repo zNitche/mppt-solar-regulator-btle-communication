@@ -23,7 +23,7 @@ class ResponseItem:
     unit: str
 
 
-class ModbusReader:
+class MPPTReader:
     def __init__(self,
                  device_address: str,
                  request_items: list[RequestItem],
@@ -134,7 +134,7 @@ def main(args: argparse.Namespace):
         RequestItem("0d12367", "Solar current", 100, "A"),
     ]
 
-    reader = ModbusReader(
+    reader = MPPTReader(
         request_items=request_items,
         read_target=read_target_address,
         read_count=len(request_items),
