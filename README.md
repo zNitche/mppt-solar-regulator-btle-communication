@@ -171,7 +171,7 @@ hex value - address (dec) - value info - dec value - final value
 
 now write script to automate the whole process
 ```
-> python3 read_mppt_data.py --address [MAC] --write_char "0000ff02-0000-1000-8000-00805f9b34fb" --notify_char "0000ff01-0000-1000-8000-00805f9b34fb" 
+> python3 read_mppt_data.py --address [MAC]
 
 Battery remaining capacity -> 84.0 %
 Battery voltage -> 13.1 V
@@ -188,7 +188,7 @@ it works, well, kind of, it looks like there is a issue with parsing negative va
 
 after tweaking
 ```
-> python3 read_mppt_data.py --address [MAC] --write_char "0000ff02-0000-1000-8000-00805f9b34fb" --notify_char "0000ff01-0000-1000-8000-00805f9b34fb" 
+> python3 read_mppt_data.py --address [MAC]
 
 Battery remaining capacity -> 99.0 %
 Battery voltage -> 13.1 V
