@@ -203,6 +203,9 @@ Solar current -> 0.0 A
 
 And here we are, having foundations to build upon.
 
+#### Micropython (Raspberry Pi Pico W)
+WIP
+
 #### Resources
 - [communication proof of concept](https://github.com/majki09/lumiax_solar_bt)
 - [modbus documentation](https://www.lumiax.com/kindeditor/attached/file/User%20Manuals/Accessories/Lumiax%20Modbus%20Communication%20Protocol%20%20V4.3.pdf)
