@@ -1,0 +1,3 @@
+cp -r pico/*.py /pyboard
+cp -r pico/*.json /pyboard
+repl
