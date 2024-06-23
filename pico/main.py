@@ -1,7 +1,8 @@
 import json
 import asyncio
 import aioble
-from aioble.central import DeviceConnection
+import bluetooth
+import common
 
 
 def load_config():
@@ -17,7 +18,7 @@ async def scan_devices():
             print(result, result.name(), result.rssi, result.services())
 
 
-async def connect_to_device(address: str) -> DeviceConnection | None:
+async def connect_to_device(address: str) -> aioble.central.DeviceConnection | None:
     connection = None
     device = aioble.Device(aioble.ADDR_PUBLIC, address)
 
@@ -45,15 +46,53 @@ async def mainloop():
         async with connection:
             print("connection...")
 
-            services = []
+            # services = []
+            #
+            # async for service in connection.services():
+            #     print(service, service.uuid)
+            #     services.append(service)
+            #
+            # for service in services:
+            #     async for char in service.characteristics():
+            #         print(char)
 
-            async for service in connection.services():
-                print(service, service.uuid)
-                services.append(service)
+            service_uuid = bluetooth.UUID(0xff00)
+            write_char_uuid = bluetooth.UUID(0xff02)
+            notify_char_uuid = bluetooth.UUID(0xff01)
 
-            for service in services:
-                async for char in service.characteristics():
-                    print(char)
+            data_service: aioble.Service = await connection.service(service_uuid)
+
+            write_char: aioble.Characteristic = await data_service.characteristic(write_char_uuid)
+            notify_char: aioble.Characteristic = await data_service.characteristic(notify_char_uuid)
+
+            print("subscribing for notifications")
+            await notify_char.subscribe(notify=True)
+
+            read_count = 5
+            write_buff = common.get_buff("304E", count=read_count)
+
+            print(f"writing buff {write_buff}")
+            await write_char.write(write_buff)
+
+            print("waiting for response")
+
+            data_str = ""
+
+            while True:
+                data = await notify_char.notified(timeout_ms=5000)
+                data = data.hex()
+
+                if data:
+                    data_str += data
+                    crc = common.modbus_crc(data_str[:-4]) if len(data_str) > 4 else None
+                    length_match = (10 + (read_count * 4)) == len(data_str)
+
+                    if crc and data_str.endswith(crc) and length_match:
+                        break
+
+                    print(f"[GATT Notification] CRC {crc} | {data}")
+
+            print(data_str)
 
     print("done")
 
