@@ -1,33 +1,30 @@
 import aioble
 import bluetooth
-import common, utils
+import common
+import asyncio
 
 
-async def mainloop():
-    print("loading config...")
-    config = utils.load_config()
+async def connect_to_device(device_address):
+    connection = None
+    device = aioble.Device(aioble.ADDR_PUBLIC, device_address)
 
-    # print("scanning devices...")
-    # await utils.scan_devices()
+    try:
+        connection = await device.connect(timeout_ms=2000)
+    except asyncio.TimeoutError:
+        print(f"timeout while connecting to {device_address}")
 
+    return connection
+
+
+async def bare_mppt_reading(config: dict[str, str]):
     print("connecting to target...")
-    connection = await utils.connect_to_device(config.get("MAC_ADDRESS"))
+    connection = await connect_to_device(config.get("MAC_ADDRESS"))
 
     if connection:
         print(f"connected to {connection.device}")
 
         async with connection:
             print("connection...")
-
-            # services = []
-            #
-            # async for service in connection.services():
-            #     print(service, service.uuid)
-            #     services.append(service)
-            #
-            # for service in services:
-            #     async for char in service.characteristics():
-            #         print(char)
 
             service_uuid = bluetooth.UUID(0xff00)
             write_char_uuid = bluetooth.UUID(0xff02)

@@ -1,8 +1,32 @@
 import aioble
 import bluetooth
 import sys
-import common, utils
-from dataclasses import RequestItem, ResponseItem
+import asyncio
+import common
+
+
+class RequestItem:
+    def __init__(self,
+                 dec_address: str,
+                 description: str,
+                 multiplier: int,
+                 unit: str,
+                 skip: bool = False):
+        self.dec_address = dec_address
+        self.description = description
+        self.multiplier = multiplier
+        self.unit = unit
+        self.skip = skip
+
+
+class ResponseItem:
+    def __init__(self,
+                 description: str,
+                 value: float,
+                 unit: str):
+        self.description = description
+        self.value = value
+        self.unit = unit
 
 
 class MpptReader:
@@ -20,13 +44,14 @@ class MpptReader:
 
         self.logging = logging
 
-    async def read(self, request_items: list[RequestItem], read_target_address: str) -> list[ResponseItem]:
+    async def read(self, request_items: list[RequestItem]) -> list[ResponseItem]:
         data = []
 
         try:
-            data = await self.__process(request_items, read_target_address)
+            data = await self.__process(request_items)
 
         except Exception as e:
+            self.__log("error while reading mppt data...")
             sys.print_exception(e)
 
         return data
@@ -52,16 +77,18 @@ class MpptReader:
 
         return write_char, notify_char
 
-    async def __process(self, request_items: list[RequestItem], read_target_address: str) -> list[ResponseItem]:
+    async def __process(self, request_items: list[RequestItem]) -> list[ResponseItem]:
         self.__log("connecting to target...")
-        connection = await utils.connect_to_device(self.device_address, connection_timeout=5000)
+        connection = await self.__connect_to_device(connection_timeout=5000)
 
         if connection:
             self.__log(f"connected to {connection.device}")
 
             async with connection:
                 write_char, notify_char = await self.__setup_connection(connection)
-                write_buff = common.get_buff(read_target_address, count=len(request_items))
+
+                first_item_hex_address = "%x" % int(request_items[0].dec_address)
+                write_buff = common.get_buff(first_item_hex_address, count=len(request_items))
 
                 self.__log(f"writing buff {write_buff}")
                 await write_char.write(write_buff)
@@ -114,6 +141,17 @@ class MpptReader:
                 response_data.append(ResponseItem(item.description, dec_value, item.unit))
 
         return response_data
+
+    async def __connect_to_device(self, connection_timeout=2000) -> aioble.central.DeviceConnection | None:
+        connection = None
+        device = aioble.Device(aioble.ADDR_PUBLIC, self.device_address)
+
+        try:
+            connection = await device.connect(timeout_ms=connection_timeout)
+        except asyncio.TimeoutError:
+            self.__log(f"timeout while connecting to {self.device_address}")
+
+        return connection
 
     def __log(self, message: str):
         if self.logging:
