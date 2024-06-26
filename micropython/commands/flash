@@ -1,2 +1,2 @@
-cp -r pico/*.py /pyboard
-cp -r pico/*.json /pyboard
+cp -r micropython/*.py /pyboard
+cp -r micropython/*.json /pyboard
