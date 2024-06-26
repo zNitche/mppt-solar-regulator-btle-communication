@@ -204,7 +204,52 @@ Solar current -> 0.0 A
 And here we are, having foundations to build upon.
 
 #### Micropython (Raspberry Pi Pico W)
-WIP
+Ah here we go again, it is time to utilize MicroPython on RaspberryPi Pico W.
+This time we will use following packages:
+
+- [aioble](https://github.com/micropython/micropython-lib/tree/master/micropython/bluetooth/aioble) - for working with async bluetooth.
+- [rshell](https://github.com/dhylands/rshell) - as MicroPython remote shell.
+
+For local development:
+```
+pip3 install -r micropython/requirements.txt
+```
+
+To flash files
+```
+rshell -f micropython/commands/flash_w_repl
+```
+
+We won't go into details as everything was nicely described above. As proof that it can be done using `aioble` I wrote simple bare reader without 
+support for data parsing, this file is called `bare_mppt_reading.py`.
+
+I flashed microcontroller, run code, got following output
+
+```
+[Notification] CRC 938e | 0104160063055a001c017f0000055a002c025a00
+data: 0104160063055a001c017f0000055a002c025a00000cc600222496
+done
+```
+
+Having proof that bluetooth library works fine I started porting Python `read_mppt_data.py` to MicroPython.
+The result of this work is `mppt_reader.py`. Which produces following output.
+
+```
+Battery remaining capacity -> 99.0 %
+Battery voltage -> 13.7 V
+Battery current -> 0.29 A
+Battery power -> 3.97 W
+Battery power -> 0.0 W
+Load voltage -> 13.7 V
+Load current -> 0.43 A
+Load power -> 5.89 W
+Load power -> 0.0 W
+Solar voltage -> 32.4 V
+Solar current -> 0.34 A
+```
+
+Now having both implementations allowing me to use any small factor board running Linux or microcontroller with WiFi and MicroPython support,
+I can't wait to build something with it.
 
 #### Resources
 - [communication proof of concept](https://github.com/majki09/lumiax_solar_bt)
